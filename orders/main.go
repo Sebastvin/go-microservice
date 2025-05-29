@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/sebastvin/commons"
+	"github.com/sebastvin/commons/broker"
 	"github.com/sebastvin/commons/discovery"
 	"github.com/sebastvin/commons/discovery/consul"
 	"google.golang.org/grpc"
@@ -16,6 +17,10 @@ var (
 	serviceName = "orders"
 	grcpAddr    = common.EnvString("GRCP_ADDR", "localhost:2000")
 	consulAddr  = common.EnvString("CONSUL_ADDR", "localhost:8500")
+	amqpUser    = common.EnvString("RABBITMQ_USER", "guest")
+	amqpPass    = common.EnvString("RABBITMQ_PASS", "guest")
+	amqpHost    = common.EnvString("RABBITMQ_HOST", "localhost")
+	amqpPort    = common.EnvString("RABBITMQ_PORT", "5672")
 )
 
 func main() {
@@ -42,6 +47,13 @@ func main() {
 
 	defer registry.Deregister(ctx, instanceID, serviceName)
 
+	ch, close := broker.Connect(amqpUser, amqpPass, amqpHost, amqpPort)
+
+	defer func() {
+		close()
+		ch.Close()
+	}()
+
 	l, err := net.Listen("tcp", grcpAddr)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
@@ -52,7 +64,7 @@ func main() {
 
 	store := NewStore()
 	svc := NewService(store)
-	NewGRPCHandler(grpcServer, svc)
+	NewGRPCHandler(grpcServer, svc, ch)
 
 	svc.CreateOrder(context.Background())
 
