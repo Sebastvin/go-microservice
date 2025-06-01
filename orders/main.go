@@ -6,7 +6,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/sebastvin/commons"
+	common "github.com/sebastvin/commons"
 	"github.com/sebastvin/commons/broker"
 	"github.com/sebastvin/commons/discovery"
 	"github.com/sebastvin/commons/discovery/consul"
@@ -15,12 +15,12 @@ import (
 
 var (
 	serviceName = "orders"
-	grcpAddr    = common.EnvString("GRCP_ADDR", "localhost:2000")
-	consulAddr  = common.EnvString("CONSUL_ADDR", "localhost:8500")
 	amqpUser    = common.EnvString("RABBITMQ_USER", "guest")
 	amqpPass    = common.EnvString("RABBITMQ_PASS", "guest")
 	amqpHost    = common.EnvString("RABBITMQ_HOST", "localhost")
 	amqpPort    = common.EnvString("RABBITMQ_PORT", "5672")
+	grcpAddr    = common.EnvString("GRCP_ADDR", "localhost:2000")
+	consulAddr  = common.EnvString("CONSUL_ADDR", "localhost:8500")
 )
 
 func main() {
