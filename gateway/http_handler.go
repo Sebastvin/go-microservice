@@ -5,7 +5,7 @@ import (
 
 	"errors"
 
-	"github.com/sebastvin/commons"
+	common "github.com/sebastvin/commons"
 	pb "github.com/sebastvin/commons/api"
 	"github.com/sebastvin/omsv-gateway/gateway"
 
@@ -22,10 +22,34 @@ func NewHandler(gateway gateway.OrdersGateway) *handler {
 }
 
 func (h *handler) registerRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/customers/{customerID}/orders", h.HandleCreateOrder)
+	// static
+	mux.Handle("/", http.FileServer(http.Dir("public")))
+
+	mux.HandleFunc("POST /api/customers/{customerID}/orders", h.handleCreateOrder)
+	mux.HandleFunc("GET /api/customers/{customerID}/orders/{orderID}", h.handleGetOrder)
+
 }
 
-func (h *handler) HandleCreateOrder(w http.ResponseWriter, r *http.Request) {
+func (h *handler) handleGetOrder(w http.ResponseWriter, r *http.Request) {
+	customerID := r.PathValue("customerID")
+	orderID := r.PathValue("orderID")
+
+	o, err := h.gateway.GetOrder(r.Context(), orderID, customerID)
+	rStatus := status.Convert(err)
+	if rStatus != nil {
+		if rStatus.Code() != codes.InvalidArgument {
+			common.WriteError(w, http.StatusBadRequest, rStatus.Message())
+			return
+		}
+
+		common.WriteError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	common.WriteJSON(w, http.StatusOK, o)
+}
+
+func (h *handler) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
 	customerID := r.PathValue("customerID")
 
 	var items []*pb.ItemsWithQuantity
