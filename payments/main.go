@@ -12,6 +12,7 @@ import (
 	"github.com/sebastvin/commons/broker"
 	"github.com/sebastvin/commons/discovery"
 	"github.com/sebastvin/commons/discovery/consul"
+	"github.com/sebastvin/omsv-payments/gateway"
 	stripeProcessor "github.com/sebastvin/omsv-payments/processor/stripe"
 	"github.com/stripe/stripe-go/v82"
 	"google.golang.org/grpc"
@@ -65,7 +66,8 @@ func main() {
 	}()
 
 	stripeProcessor := stripeProcessor.NewProcessor()
-	svc := NewService(stripeProcessor)
+	gateway := gateway.NewGateway(registry)
+	svc := NewService(stripeProcessor, gateway)
 
 	amqpConsumer := NewConsumer(svc)
 	go amqpConsumer.Listen(ch)
