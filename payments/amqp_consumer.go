@@ -24,7 +24,7 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 		log.Printf("Failed to declare queue: %v", err)
 	}
 
-	msgs, err := ch.Consume(q.Name, "", true, false, false, false, nil)
+	msgs, err := ch.Consume(q.Name, "", false, false, false, false, nil)
 	if err != nil {
 		log.Printf("Failed to declare queue: %v", err)
 	}
@@ -37,6 +37,7 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 
 			o := &pb.Order{}
 			if err := json.Unmarshal(d.Body, o); err != nil {
+				d.Nack(false, false)
 				log.Printf("Failed to unmarshal order: %v", err)
 				continue
 			}
@@ -45,10 +46,16 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 			if err != nil {
 				log.Printf("Failed to create payment: %v", err)
 
+				if err := broker.HandleRetry(ch, &d); err != nil {
+					log.Printf("Error handle retry: %v", err)
+				}
+
+				d.Nack(false, false)
 				continue
 			}
 
 			log.Printf("Payment link created %s", paymentLink)
+			d.Ack(false)
 		}
 	}()
 
