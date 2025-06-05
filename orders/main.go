@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/sebastvin/commons/broker"
 	"github.com/sebastvin/commons/discovery"
 	"github.com/sebastvin/commons/discovery/consul"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -21,9 +21,20 @@ var (
 	amqpPort    = common.EnvString("RABBITMQ_PORT", "5672")
 	grcpAddr    = common.EnvString("GRCP_ADDR", "localhost:2000")
 	consulAddr  = common.EnvString("CONSUL_ADDR", "localhost:8500")
+	jaegerAddr  = common.EnvString("JAEGER_ADDR", "localhost:4318")
 )
 
 func main() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+
+	zap.ReplaceGlobals(logger)
+
+	err := common.SetGlobalTracer(context.TODO(), serviceName, jaegerAddr)
+	if err != nil {
+		logger.Fatal("could not set global tracer", zap.Error(err))
+	}
+
 	registry, err := consul.NewRegistry(consulAddr, serviceName)
 
 	if err != nil {
@@ -39,7 +50,7 @@ func main() {
 	go func() {
 		for {
 			if err := registry.HealthCheck(instanceID, serviceName); err != nil {
-				log.Fatal("failed to health check")
+				logger.Fatal("failed to health check", zap.Error(err))
 			}
 			time.Sleep(time.Second * 1)
 		}
@@ -56,7 +67,7 @@ func main() {
 
 	l, err := net.Listen("tcp", grcpAddr)
 	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
+		logger.Fatal("Failed to listen:", zap.Error(err))
 	}
 	defer l.Close()
 
@@ -64,13 +75,17 @@ func main() {
 
 	store := NewStore()
 	svc := NewService(store)
-	NewGRPCHandler(grpcServer, svc, ch)
+	svcWithTelemetry := NewTelemetryMiddleware(svc)
+	svcWithLogging := NewLoggingMiddleware(svcWithTelemetry)
 
-	// svc.CreateOrder(context.Background())
+	NewGRPCHandler(grpcServer, svcWithLogging, ch)
 
-	log.Println("GRPC Server Started at ", grcpAddr)
+	consumer := NewConsumer(svcWithLogging)
+	go consumer.Listen(ch)
+
+	logger.Info("Starting HTTP server", zap.String("port", grcpAddr))
 
 	if err := grpcServer.Serve(l); err != nil {
-		log.Fatal(err.Error())
+		logger.Fatal("failed to serve", zap.Error(err))
 	}
 }
