@@ -2,22 +2,29 @@ package main
 
 import (
 	"context"
-	"log"
 
 	common "github.com/sebastvin/commons"
 	pb "github.com/sebastvin/commons/api"
+	"github.com/sebastvin/omsv-orders/gateway"
 )
 
 type service struct {
-	store OrdersStore
+	store   OrdersStore
+	gateway gateway.StockGateway
 }
 
-func NewService(store OrdersStore) *service {
-	return &service{store}
+func NewService(store OrdersStore, gateway gateway.StockGateway) *service {
+	return &service{store, gateway}
 }
 
 func (s *service) GetOrder(ctx context.Context, p *pb.GetOrderRequest) (*pb.Order, error) {
-	return s.store.Get(ctx, p.OrderID, p.CustomerID)
+	o, err := s.store.Get(ctx, p.OrderID, p.CustomerID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return o.ToProto(), nil
 }
 
 func (s *service) UpdateOrder(ctx context.Context, o *pb.Order) (*pb.Order, error) {
@@ -30,13 +37,18 @@ func (s *service) UpdateOrder(ctx context.Context, o *pb.Order) (*pb.Order, erro
 }
 
 func (s *service) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest, items []*pb.Item) (*pb.Order, error) {
-	id, err := s.store.Create(ctx, p, items)
+	id, err := s.store.Create(ctx, Order{
+		CustomerID:  p.CustomerID,
+		Status:      "pending",
+		Items:       items,
+		PaymentLink: "",
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	o := &pb.Order{
-		ID:         id,
+		ID:         id.Hex(),
 		CustomerID: p.CustomerID,
 		Status:     "pending",
 		Items:      items,
@@ -51,18 +63,17 @@ func (s *service) ValidateOrder(ctx context.Context, p *pb.CreateOrderRequest) (
 	}
 
 	mergedItems := mergeItemsQuantities(p.Items)
-	log.Print(mergedItems)
 
-	var itemsWithPrice []*pb.Item
-	for _, i := range mergedItems {
-		itemsWithPrice = append(itemsWithPrice, &pb.Item{
-			PriceID:  "price_1RVZ3hClTXDUG291P1wmsO9h",
-			ID:       i.ID,
-			Quantity: i.Quantity,
-		})
+	inStock, items, err := s.gateway.CheckIfItemIsInStock(ctx, p.CustomerID, mergedItems)
+	if err != nil {
+		return nil, err
 	}
 
-	return itemsWithPrice, nil
+	if !inStock {
+		return items, common.ErrNoStock
+	}
+
+	return items, nil
 }
 
 func mergeItemsQuantities(items []*pb.ItemsWithQuantity) []*pb.ItemsWithQuantity {
