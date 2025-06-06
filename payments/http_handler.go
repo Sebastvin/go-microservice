@@ -25,10 +25,9 @@ type PaymentHTTPHandler struct {
 func NewPaymentHTTPHandler(channel *amqp.Channel) *PaymentHTTPHandler {
 	return &PaymentHTTPHandler{channel}
 }
+
 func (h *PaymentHTTPHandler) registerRoutes(router *http.ServeMux) {
-	router.HandleFunc("/webhook", func(w http.ResponseWriter, r *http.Request) {
-		h.handleCheckoutWebhook(w, r)
-	})
+	router.HandleFunc("/webhook", h.handleCheckoutWebhook)
 }
 
 func (h *PaymentHTTPHandler) handleCheckoutWebhook(w http.ResponseWriter, r *http.Request) {
@@ -42,10 +41,6 @@ func (h *PaymentHTTPHandler) handleCheckoutWebhook(w http.ResponseWriter, r *htt
 		return
 	}
 
-	// Pass the request body and Stripe-Signature header to ConstructEvent, along with the webhook signing key
-	// Use the secret provided by Stripe CLI for local testing
-	// or your webhook endpoint's secret.
-	// endpointSecret := "whsec_..."
 	event, err := webhook.ConstructEvent(body, r.Header.Get("Stripe-Signature"), endpointStripeSecret)
 
 	if err != nil {
