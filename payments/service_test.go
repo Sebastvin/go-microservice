@@ -15,17 +15,16 @@ func TestService(t *testing.T) {
 	registry := inmemRegistry.NewRegistry()
 
 	gateway := gateway.NewGateway(registry)
-
 	svc := NewService(processor, gateway)
 
 	t.Run("should create a payment link", func(t *testing.T) {
 		link, err := svc.CreatePayment(context.Background(), &api.Order{})
 		if err != nil {
-			t.Errorf("CreatePayment() error = %v want nil", err)
+			t.Errorf("CreatePayment() error = %v, want nil", err)
 		}
 
 		if link == "" {
-			t.Errorf("CreatePayment() link in empty")
+			t.Error("CreatePayment() link is empty")
 		}
 	})
 }
