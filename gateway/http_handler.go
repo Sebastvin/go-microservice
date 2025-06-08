@@ -60,8 +60,8 @@ func (h *handler) handleGetOrder(w http.ResponseWriter, r *http.Request) {
 func (h *handler) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
 	customerID := r.PathValue("customerID")
 
-	var items []*pb.ItemsWithQuantity
-	if err := common.ReadJSON(r, &items); err != nil {
+	var req pb.CreateOrderRequest
+	if err := common.ReadJSON(r, &req); err != nil {
 		common.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -70,15 +70,13 @@ func (h *handler) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
 	ctx, span := tr.Start(r.Context(), fmt.Sprintf("%s %s", r.Method, r.RequestURI))
 	defer span.End()
 
-	if err := validateItems(items); err != nil {
+	if err := validateItems(req.Items); err != nil {
 		common.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	o, err := h.gateway.CreateOrder(ctx, &pb.CreateOrderRequest{
-		CustomerID: customerID,
-		Items:      items,
-	})
+	req.CustomerID = customerID
+	o, err := h.gateway.CreateOrder(ctx, &req)
 
 	rStatus := status.Convert(err)
 	if rStatus != nil {

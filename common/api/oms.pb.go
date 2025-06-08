@@ -28,6 +28,7 @@ type Order struct {
 	Status        string                 `protobuf:"bytes,3,opt,name=Status,proto3" json:"Status,omitempty"`
 	Items         []*Item                `protobuf:"bytes,4,rep,name=Items,proto3" json:"Items,omitempty"`
 	PaymentLink   string                 `protobuf:"bytes,5,opt,name=PaymentLink,proto3" json:"PaymentLink,omitempty"`
+	Image         string                 `protobuf:"bytes,6,opt,name=image,proto3" json:"image,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -93,6 +94,13 @@ func (x *Order) GetItems() []*Item {
 func (x *Order) GetPaymentLink() string {
 	if x != nil {
 		return x.PaymentLink
+	}
+	return ""
+}
+
+func (x *Order) GetImage() string {
+	if x != nil {
+		return x.Image
 	}
 	return ""
 }
@@ -273,6 +281,7 @@ type CreateOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CustomerID    string                 `protobuf:"bytes,1,opt,name=customerID,proto3" json:"customerID,omitempty"`
 	Items         []*ItemsWithQuantity   `protobuf:"bytes,2,rep,name=Items,proto3" json:"Items,omitempty"`
+	Image         string                 `protobuf:"bytes,3,opt,name=image,proto3" json:"image,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -319,6 +328,13 @@ func (x *CreateOrderRequest) GetItems() []*ItemsWithQuantity {
 		return x.Items
 	}
 	return nil
+}
+
+func (x *CreateOrderRequest) GetImage() string {
+	if x != nil {
+		return x.Image
+	}
+	return ""
 }
 
 type CheckIfItemIsInStockRequest struct {
@@ -509,7 +525,7 @@ var File_api_oms_proto protoreflect.FileDescriptor
 
 const file_api_oms_proto_rawDesc = "" +
 	"\n" +
-	"\rapi/oms.proto\x12\x03api\"\x92\x01\n" +
+	"\rapi/oms.proto\x12\x03api\"\xa8\x01\n" +
 	"\x05Order\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\tR\x02ID\x12\x1e\n" +
 	"\n" +
@@ -517,7 +533,8 @@ const file_api_oms_proto_rawDesc = "" +
 	"CustomerID\x12\x16\n" +
 	"\x06Status\x18\x03 \x01(\tR\x06Status\x12\x1f\n" +
 	"\x05Items\x18\x04 \x03(\v2\t.api.ItemR\x05Items\x12 \n" +
-	"\vPaymentLink\x18\x05 \x01(\tR\vPaymentLink\"K\n" +
+	"\vPaymentLink\x18\x05 \x01(\tR\vPaymentLink\x12\x14\n" +
+	"\x05image\x18\x06 \x01(\tR\x05image\"K\n" +
 	"\x0fGetOrderRequest\x12\x18\n" +
 	"\aOrderID\x18\x01 \x01(\tR\aOrderID\x12\x1e\n" +
 	"\n" +
@@ -530,12 +547,13 @@ const file_api_oms_proto_rawDesc = "" +
 	"\aPriceID\x18\x04 \x01(\tR\aPriceID\"?\n" +
 	"\x11ItemsWithQuantity\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\tR\x02ID\x12\x1a\n" +
-	"\bQuantity\x18\x02 \x01(\x05R\bQuantity\"b\n" +
+	"\bQuantity\x18\x02 \x01(\x05R\bQuantity\"x\n" +
 	"\x12CreateOrderRequest\x12\x1e\n" +
 	"\n" +
 	"customerID\x18\x01 \x01(\tR\n" +
 	"customerID\x12,\n" +
-	"\x05Items\x18\x02 \x03(\v2\x16.api.ItemsWithQuantityR\x05Items\"K\n" +
+	"\x05Items\x18\x02 \x03(\v2\x16.api.ItemsWithQuantityR\x05Items\x12\x14\n" +
+	"\x05image\x18\x03 \x01(\tR\x05image\"K\n" +
 	"\x1bCheckIfItemIsInStockRequest\x12,\n" +
 	"\x05Items\x18\x01 \x03(\v2\x16.api.ItemsWithQuantityR\x05Items\"Y\n" +
 	"\x1cCheckIfItemIsInStockResponse\x12\x18\n" +

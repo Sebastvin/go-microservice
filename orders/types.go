@@ -26,6 +26,7 @@ type Order struct {
 	Status      string             `bson:"status,omitempty"`
 	PaymentLink string             `bson:"paymentLink,omitempty"`
 	Items       []*pb.Item         `bson:"items,omitempty"`
+	Image       string             `bson:"image,omitempty"`
 }
 
 func (o *Order) ToProto() *pb.Order {
@@ -34,5 +35,6 @@ func (o *Order) ToProto() *pb.Order {
 		CustomerID:  o.CustomerID,
 		Status:      o.Status,
 		PaymentLink: o.PaymentLink,
+		Image:       o.Image,
 	}
 }

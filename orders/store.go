@@ -55,7 +55,8 @@ func (s *store) Update(ctx context.Context, id string, newOrder *pb.Order) error
 		bson.M{"$set": bson.M{
 			"paymentLink": newOrder.PaymentLink,
 			"status":      newOrder.Status,
-		}})
+		}},
+	)
 
 	return err
 }

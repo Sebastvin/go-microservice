@@ -10,6 +10,7 @@ message Order {
     string Status = 3;
     repeated Item Items = 4;
     string PaymentLink = 5;
+    string image = 6;
 }
 
 service OrderService {
@@ -38,7 +39,7 @@ message ItemsWithQuantity {
 message CreateOrderRequest {
     string customerID = 1;
     repeated ItemsWithQuantity Items = 2;
-
+    string image = 3;
 }
 
 service StockService {

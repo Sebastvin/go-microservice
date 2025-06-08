@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 
 	common "github.com/sebastvin/commons"
 	pb "github.com/sebastvin/commons/api"
@@ -37,13 +38,20 @@ func (s *service) UpdateOrder(ctx context.Context, o *pb.Order) (*pb.Order, erro
 }
 
 func (s *service) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest, items []*pb.Item) (*pb.Order, error) {
-	id, err := s.store.Create(ctx, Order{
+	orderToSave := Order{
 		CustomerID:  p.CustomerID,
 		Status:      "pending",
 		Items:       items,
 		PaymentLink: "",
-	})
+		Image:       p.Image,
+	}
+
+	log.Printf("Service CreateOrder: Attempting to save internal Order struct - CustomerID: %s, Image: %s, Status: %s",
+		orderToSave.CustomerID, orderToSave.Image, orderToSave.Status)
+
+	id, err := s.store.Create(ctx, orderToSave)
 	if err != nil {
+		log.Printf("Service CreateOrder: Failed to save order to store: %v", err)
 		return nil, err
 	}
 
@@ -52,7 +60,10 @@ func (s *service) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest, ite
 		CustomerID: p.CustomerID,
 		Status:     "pending",
 		Items:      items,
+		Image:      p.Image,
 	}
+
+	log.Printf("Service CreateOrder: Order created successfully - ID: %s, Image: %s", o.ID, o.Image)
 
 	return o, nil
 }
