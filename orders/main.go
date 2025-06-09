@@ -19,17 +19,18 @@ import (
 )
 
 var (
-	serviceName = "orders"
-	amqpUser    = common.EnvString("RABBITMQ_USER", "guest")
-	amqpPass    = common.EnvString("RABBITMQ_PASS", "guest")
-	amqpHost    = common.EnvString("RABBITMQ_HOST", "localhost")
-	amqpPort    = common.EnvString("RABBITMQ_PORT", "5672")
-	grcpAddr    = common.EnvString("GRCP_ADDR", "localhost:2000")
-	consulAddr  = common.EnvString("CONSUL_ADDR", "localhost:8500")
-	jaegerAddr  = common.EnvString("JAEGER_ADDR", "localhost:4318")
-	mongoUser   = common.EnvString("MONGO_DB_USER", "root")
-	mongoPass   = common.EnvString("MONGO_DB_PASS", "example")
-	mongoAddr   = common.EnvString("MONGO_DB_HOST", "localhost:27017")
+	serviceName  = "orders"
+	amqpUser     = common.EnvString("RABBITMQ_USER", "guest")
+	amqpPass     = common.EnvString("RABBITMQ_PASS", "guest")
+	amqpHost     = common.EnvString("RABBITMQ_HOST", "localhost")
+	amqpPort     = common.EnvString("RABBITMQ_PORT", "5672")
+	grcpAddr     = common.EnvString("GRCP_ADDR", "localhost:2000")
+	consulAddr   = common.EnvString("CONSUL_ADDR", "localhost:8500")
+	jaegerAddr   = common.EnvString("JAEGER_ADDR", "localhost:4318")
+	mongoUser    = common.EnvString("MONGO_DB_USER", "root")
+	mongoPass    = common.EnvString("MONGO_DB_PASS", "example")
+	mongoAddr    = common.EnvString("MONGO_DB_HOST", "localhost:27017")
+	openaiApiKey = common.EnvString("OPENAI_API_KEY", "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")
 )
 
 func main() {
@@ -37,6 +38,10 @@ func main() {
 	defer logger.Sync()
 
 	zap.ReplaceGlobals(logger)
+
+	if openaiApiKey == "" {
+		logger.Fatal("OPENAI_API_KEY environment variable not set")
+	}
 
 	err := common.SetGlobalTracer(context.TODO(), serviceName, jaegerAddr)
 	if err != nil {
@@ -90,7 +95,7 @@ func main() {
 	gateway := gateway.NewGateway(registry)
 
 	store := NewStore(mongoClient)
-	svc := NewService(store, gateway)
+	svc := NewService(store, gateway, openaiApiKey)
 	svcWithTelemetry := NewTelemetryMiddleware(svc)
 	svcWithLogging := NewLoggingMiddleware(svcWithTelemetry)
 

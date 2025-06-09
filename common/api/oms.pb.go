@@ -29,6 +29,7 @@ type Order struct {
 	Items         []*Item                `protobuf:"bytes,4,rep,name=Items,proto3" json:"Items,omitempty"`
 	PaymentLink   string                 `protobuf:"bytes,5,opt,name=PaymentLink,proto3" json:"PaymentLink,omitempty"`
 	Image         string                 `protobuf:"bytes,6,opt,name=image,proto3" json:"image,omitempty"`
+	ResultsBase64 []string               `protobuf:"bytes,7,rep,name=results_base64,json=resultsBase64,proto3" json:"results_base64,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -103,6 +104,13 @@ func (x *Order) GetImage() string {
 		return x.Image
 	}
 	return ""
+}
+
+func (x *Order) GetResultsBase64() []string {
+	if x != nil {
+		return x.ResultsBase64
+	}
+	return nil
 }
 
 type GetOrderRequest struct {
@@ -525,7 +533,7 @@ var File_api_oms_proto protoreflect.FileDescriptor
 
 const file_api_oms_proto_rawDesc = "" +
 	"\n" +
-	"\rapi/oms.proto\x12\x03api\"\xa8\x01\n" +
+	"\rapi/oms.proto\x12\x03api\"\xcf\x01\n" +
 	"\x05Order\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\tR\x02ID\x12\x1e\n" +
 	"\n" +
@@ -534,7 +542,8 @@ const file_api_oms_proto_rawDesc = "" +
 	"\x06Status\x18\x03 \x01(\tR\x06Status\x12\x1f\n" +
 	"\x05Items\x18\x04 \x03(\v2\t.api.ItemR\x05Items\x12 \n" +
 	"\vPaymentLink\x18\x05 \x01(\tR\vPaymentLink\x12\x14\n" +
-	"\x05image\x18\x06 \x01(\tR\x05image\"K\n" +
+	"\x05image\x18\x06 \x01(\tR\x05image\x12%\n" +
+	"\x0eresults_base64\x18\a \x03(\tR\rresultsBase64\"K\n" +
 	"\x0fGetOrderRequest\x12\x18\n" +
 	"\aOrderID\x18\x01 \x01(\tR\aOrderID\x12\x1e\n" +
 	"\n" +
