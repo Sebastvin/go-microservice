@@ -166,13 +166,13 @@ func (x *GetOrderRequest) GetCustomerID() string {
 }
 
 type Item struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ID            string                 `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=Name,proto3" json:"Name,omitempty"`
-	Quantity      int32                  `protobuf:"varint,3,opt,name=Quantity,proto3" json:"Quantity,omitempty"`
-	PriceID       string                 `protobuf:"bytes,4,opt,name=PriceID,proto3" json:"PriceID,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ID             string                 `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Name           string                 `protobuf:"bytes,2,opt,name=Name,proto3" json:"Name,omitempty"`
+	StyleReference string                 `protobuf:"bytes,3,opt,name=StyleReference,proto3" json:"StyleReference,omitempty"`
+	PriceID        string                 `protobuf:"bytes,4,opt,name=PriceID,proto3" json:"PriceID,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *Item) Reset() {
@@ -219,11 +219,11 @@ func (x *Item) GetName() string {
 	return ""
 }
 
-func (x *Item) GetQuantity() int32 {
+func (x *Item) GetStyleReference() string {
 	if x != nil {
-		return x.Quantity
+		return x.StyleReference
 	}
-	return 0
+	return ""
 }
 
 func (x *Item) GetPriceID() string {
@@ -234,11 +234,11 @@ func (x *Item) GetPriceID() string {
 }
 
 type ItemsWithQuantity struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ID            string                 `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
-	Quantity      int32                  `protobuf:"varint,2,opt,name=Quantity,proto3" json:"Quantity,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ID             string                 `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	StyleReference string                 `protobuf:"bytes,2,opt,name=StyleReference,proto3" json:"StyleReference,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ItemsWithQuantity) Reset() {
@@ -278,11 +278,11 @@ func (x *ItemsWithQuantity) GetID() string {
 	return ""
 }
 
-func (x *ItemsWithQuantity) GetQuantity() int32 {
+func (x *ItemsWithQuantity) GetStyleReference() string {
 	if x != nil {
-		return x.Quantity
+		return x.StyleReference
 	}
-	return 0
+	return ""
 }
 
 type CreateOrderRequest struct {
@@ -548,15 +548,15 @@ const file_api_oms_proto_rawDesc = "" +
 	"\aOrderID\x18\x01 \x01(\tR\aOrderID\x12\x1e\n" +
 	"\n" +
 	"CustomerID\x18\x02 \x01(\tR\n" +
-	"CustomerID\"`\n" +
+	"CustomerID\"l\n" +
 	"\x04Item\x12\x0e\n" +
 	"\x02ID\x18\x01 \x01(\tR\x02ID\x12\x12\n" +
-	"\x04Name\x18\x02 \x01(\tR\x04Name\x12\x1a\n" +
-	"\bQuantity\x18\x03 \x01(\x05R\bQuantity\x12\x18\n" +
-	"\aPriceID\x18\x04 \x01(\tR\aPriceID\"?\n" +
+	"\x04Name\x18\x02 \x01(\tR\x04Name\x12&\n" +
+	"\x0eStyleReference\x18\x03 \x01(\tR\x0eStyleReference\x12\x18\n" +
+	"\aPriceID\x18\x04 \x01(\tR\aPriceID\"K\n" +
 	"\x11ItemsWithQuantity\x12\x0e\n" +
-	"\x02ID\x18\x01 \x01(\tR\x02ID\x12\x1a\n" +
-	"\bQuantity\x18\x02 \x01(\x05R\bQuantity\"x\n" +
+	"\x02ID\x18\x01 \x01(\tR\x02ID\x12&\n" +
+	"\x0eStyleReference\x18\x02 \x01(\tR\x0eStyleReference\"x\n" +
 	"\x12CreateOrderRequest\x12\x1e\n" +
 	"\n" +
 	"customerID\x18\x01 \x01(\tR\n" +

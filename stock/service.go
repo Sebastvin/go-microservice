@@ -25,25 +25,16 @@ func (s *Service) CheckIfItemAreInStock(ctx context.Context, p []*pb.ItemsWithQu
 		return false, nil, err
 	}
 
-	// Check if all items are in stock
-	for _, stockItem := range itemsInStock {
-		for _, reqItem := range p {
-			if stockItem.ID == reqItem.ID && stockItem.Quantity < reqItem.Quantity {
-				return false, itemsInStock, nil
-			}
-		}
-	}
-
 	// create items with prices from stock
 	items := make([]*pb.Item, 0)
 	for _, stockItem := range itemsInStock {
 		for _, reqItem := range p {
 			if stockItem.ID == reqItem.ID {
 				items = append(items, &pb.Item{
-					ID:       stockItem.ID,
-					Name:     stockItem.Name,
-					PriceID:  stockItem.PriceID,
-					Quantity: reqItem.Quantity,
+					ID:             stockItem.ID,
+					Name:           stockItem.Name,
+					PriceID:        stockItem.PriceID,
+					StyleReference: reqItem.StyleReference,
 				})
 			}
 		}

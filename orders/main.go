@@ -6,6 +6,7 @@ import (
 	"net"
 	"time"
 
+	_ "github.com/joho/godotenv/autoload"
 	common "github.com/sebastvin/commons"
 	"github.com/sebastvin/commons/broker"
 	"github.com/sebastvin/commons/discovery"
@@ -30,7 +31,7 @@ var (
 	mongoUser    = common.EnvString("MONGO_DB_USER", "root")
 	mongoPass    = common.EnvString("MONGO_DB_PASS", "example")
 	mongoAddr    = common.EnvString("MONGO_DB_HOST", "localhost:27017")
-	openaiApiKey = common.EnvString("OPENAI_API_KEY", "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")
+	openaiApiKey = common.EnvString("OPENAI_API_KEY", "")
 )
 
 func main() {

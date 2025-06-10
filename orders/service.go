@@ -87,9 +87,7 @@ func (s *service) ValidateOrder(ctx context.Context, p *pb.CreateOrderRequest) (
 		return nil, common.ErrNoItems
 	}
 
-	mergedItems := mergeItemsQuantities(p.Items)
-
-	inStock, items, err := s.gateway.CheckIfItemIsInStock(ctx, p.CustomerID, mergedItems)
+	inStock, items, err := s.gateway.CheckIfItemIsInStock(ctx, p.CustomerID, p.Items)
 	if err != nil {
 		return nil, err
 	}
@@ -99,27 +97,6 @@ func (s *service) ValidateOrder(ctx context.Context, p *pb.CreateOrderRequest) (
 	}
 
 	return items, nil
-}
-
-func mergeItemsQuantities(items []*pb.ItemsWithQuantity) []*pb.ItemsWithQuantity {
-	merged := make([]*pb.ItemsWithQuantity, 0)
-
-	for _, item := range items {
-		found := false
-		for _, finalItem := range merged {
-			if finalItem.ID == item.ID {
-				finalItem.Quantity += item.Quantity
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			merged = append(merged, item)
-		}
-	}
-
-	return merged
 }
 
 func (s *service) GenerateAndSaveImages(ctx context.Context, orderID string) error {
@@ -155,13 +132,13 @@ func (s *service) GenerateAndSaveImages(ctx context.Context, orderID string) err
 	generatedImagesBase64 := []string{}
 
 	for _, item := range orderStruct.Items {
-		styleName := item.ID
+		styleName := item.StyleReference
 		if styleName == "" {
 			log.Printf("GenerateAndSaveImages: Item with empty ID found in order %s, skipping.", orderID)
 			continue
 		}
 
-		prompt := fmt.Sprintf("Apply the style lego to this image.", styleName)
+		prompt := fmt.Sprintf("Apply the style %s to this image.", styleName)
 
 		log.Printf("GenerateAndSaveImages: Calling OpenAI images.edit for order %s, style '%s' with prompt: '%s'", orderID, styleName, prompt)
 
@@ -192,15 +169,18 @@ func (s *service) GenerateAndSaveImages(ctx context.Context, orderID string) err
 		}
 	}
 
-	orderStruct.ResultsBase64 = generatedImagesBase64
-	updatedProtoOrder := orderStruct.ToProto()
-
-	log.Printf("GenerateAndSaveImages: Attempting to update order %s in store with %d generated images.", orderID, len(generatedImagesBase64))
-
-	err = s.store.Update(ctx, orderID, updatedProtoOrder)
-	if err != nil {
-		log.Printf("GenerateAndSaveImages: Failed to update order %s with generated images: %v", orderID, err)
-		return fmt.Errorf("failed to update order with results: %w", err)
+	if len(generatedImagesBase64) > 0 {
+		log.Printf("Service GenerateAndSaveImages: Generated %d images for order %s. Saving to DB.", len(generatedImagesBase64), orderID)
+		update := &pb.Order{
+			ID:            orderID,
+			Status:        "ready",
+			ResultsBase64: generatedImagesBase64,
+		}
+		err = s.store.Update(ctx, orderID, update)
+		if err != nil {
+			log.Printf("GenerateAndSaveImages: Failed to update order %s with generated images: %v", orderID, err)
+			return fmt.Errorf("failed to update order with results: %w", err)
+		}
 	}
 
 	log.Printf("GenerateAndSaveImages: Successfully updated order %s with generated images.", orderID)
