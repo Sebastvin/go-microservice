@@ -23,6 +23,8 @@ function App() {
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleImageUpload = (file: File) => {
     if (file && file.type.startsWith('image/')) {
@@ -70,6 +72,46 @@ function App() {
   };
 
   const isFormValid = selectedImage && selectedStyles.length > 0;
+
+  async function handleSubmit() {
+    if (!isFormValid || !selectedImage || !imagePreview) return;
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const base64 = imagePreview.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
+      const items = selectedStyles.map((style) => ({
+        id: "1",
+        name: "Onion",
+        stylereference: style,
+        priceid: "price_1RVZ3hClTXDUG291P1wmsO9h",
+      }));
+      const uniqueItems = Array.from(
+        new Map(items.map(item => [item.id + item.stylereference, item])).values()
+      );
+      const payload = { items: uniqueItems, image: base64 };
+      const res = await fetch('http://localhost:8080/api/customers/3/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error('Failed to submit order');
+      const data = await res.json();
+      if (data.RedirectToURL) {
+        window.open(data.RedirectToURL, "_blank");
+        return;
+      }
+      throw new Error('No RedirectToURL in response');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setSubmitError(err.message);
+      } else {
+        setSubmitError('Unknown error');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8 px-4">
@@ -212,16 +254,20 @@ function App() {
                 )}
               </div>
               <button
-                disabled={!isFormValid}
+                disabled={!isFormValid || isSubmitting}
                 className={`px-8 py-3 rounded-xl font-semibold text-white transition-all duration-300
-                  ${isFormValid
+                  ${isFormValid && !isSubmitting
                     ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transform hover:scale-105'
                     : 'bg-gray-300 cursor-not-allowed'
                   }`}
+                onClick={handleSubmit}
               >
-                Next Step
+                {isSubmitting ? 'Processing...' : 'Next Step'}
               </button>
             </div>
+            {submitError && (
+              <div className="mt-4 text-red-600 font-medium">{submitError}</div>
+            )}
           </div>
         </div>
       </div>
