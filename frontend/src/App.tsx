@@ -5,16 +5,20 @@ interface StyleOption {
   id: string;
   name: string;
   description: string;
+  price: string;
+  image: string;
+  priceid: string;
   color: string;
   bgColor: string;
 }
 
 const styles: StyleOption[] = [
-  { id: 'gta', name: 'GTA', description: 'Grand Theft Auto style', color: 'text-orange-700', bgColor: 'bg-orange-50 border-orange-200' },
-  { id: 'retro', name: 'Retro', description: 'Vintage 80s aesthetic', color: 'text-pink-700', bgColor: 'bg-pink-50 border-pink-200' },
-  { id: 'anime', name: 'Anime', description: 'Japanese animation style', color: 'text-purple-700', bgColor: 'bg-purple-50 border-purple-200' },
-  { id: 'pixel', name: 'Pixel Art', description: '8-bit retro gaming style', color: 'text-green-700', bgColor: 'bg-green-50 border-green-200' },
-  { id: 'watercolor', name: 'Watercolor', description: 'Soft artistic painting', color: 'text-blue-700', bgColor: 'bg-blue-50 border-blue-200' },
+  { id: '1', name: 'GTA', description: 'Grand Theft Auto style', price: 'zł9.99 PLN', image: '/placeholders/gta.png', priceid: 'price_1RcDQsClTXDUG291KHTKj0RV', color: 'text-orange-700', bgColor: 'bg-orange-50 border-orange-200' },
+  { id: '2', name: 'Retro', description: 'Vintage 80s aesthetic', price: 'zł15.00 PLN', image: '/placeholders/retro.png', priceid: 'price_1RX1NUClTXDUG29157neqin4', color: 'text-pink-700', bgColor: 'bg-pink-50 border-pink-200' },
+  { id: '3', name: 'Anime', description: 'Japanese animation style', price: 'zł5.00 PLN', image: '/placeholders/anime.png', priceid: 'price_1RVZ3hClTXDUG291P1wmsO9h', color: 'text-purple-700', bgColor: 'bg-purple-50 border-purple-200' },
+  { id: '4', name: 'Pixel Art', description: '8-bit retro gaming style', price: 'zł19.99 PLN', image: '/placeholders/pixel.png', priceid: 'price_1RcDWaClTXDUG291ifiemCK9', color: 'text-green-700', bgColor: 'bg-green-50 border-green-200' },
+  { id: '5', name: 'Watercolor', description: 'Soft artistic painting', price: 'zł3.99 PLN', image: '/placeholders/watercolor.png', priceid: 'price_1RcDX5ClTXDUG291rrlWjZkH', color: 'text-blue-700', bgColor: 'bg-blue-50 border-blue-200' },
+  { id: '6', name: 'Studio Ghibli', description: 'Based on their style line', price: 'zł49.99 PLN', image: '/placeholders/ghibli.png', priceid: 'price_1RcDXWClTXDUG291dFwFIOOp', color: 'text-red-700', bgColor: 'bg-red-50 border-red-200' },
 ];
 
 function App() {
@@ -79,12 +83,16 @@ function App() {
     setSubmitError(null);
     try {
       const base64 = imagePreview.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
-      const items = selectedStyles.map((style) => ({
-        id: "1",
-        name: "Onion",
-        stylereference: style,
-        priceid: "price_1RVZ3hClTXDUG291P1wmsO9h",
-      }));
+      const uniqueStyles = Array.from(new Set(selectedStyles));
+      const items = uniqueStyles.map((styleId) => {
+        const style = styles.find(s => s.id === styleId);
+        return {
+          id: style?.id ?? styleId,
+          name: style?.name ?? "Unknown Style",
+          stylereference: style?.name ?? styleId,
+          priceid: style?.priceid ?? "",
+        };
+      });
       const uniqueItems = Array.from(
         new Map(items.map(item => [item.id + item.stylereference, item])).values()
       );
@@ -226,9 +234,15 @@ function App() {
                         <Check className="w-5 h-5 text-current" />
                       </div>
                     )}
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold">{style.name}</h3>
-                      <p className="text-sm opacity-75">{style.description}</p>
+                    <div className="flex items-center space-x-4">
+                      <img src={style.image} alt={style.name} className="w-16 h-16 rounded-lg object-cover" />
+                      <div className="space-y-1">
+                        <h3 className="text-lg font-semibold">{style.name}</h3>
+                        <p className="text-sm opacity-75">{style.description}</p>
+                      </div>
+                    </div>
+                    <div className="absolute bottom-3 right-3 text-sm font-semibold text-current">
+                      {style.price}
                     </div>
                   </div>
                 );

@@ -16,4 +16,10 @@
 
 `cd /orders`
 
+`cd /stocks`
+
 run `air` command in each folder
+
+`cd /frontend`
+
+run `npm run dev`
