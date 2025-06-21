@@ -62,14 +62,23 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 				if err := broker.HandleRetry(ch, &d); err != nil {
 					log.Printf("Error handling retry: %v", err)
 				}
-
 				continue
 			}
 
-			messageSpan.AddEvent("order.updated")
+			messageSpan.AddEvent("order.status.updated.paid")
 			messageSpan.End()
+			log.Printf("AMQP Consumer: Order %s status updated to paid.", o.ID)
+			log.Printf("AMQP Consumer: Triggering image generation for order %s", o.ID)
 
-			log.Println("Order has been updated from AMQP")
+			err = c.service.GenerateAndSaveImages(ctx, o.ID)
+			if err != nil {
+				log.Printf("AMQP Consumer: Failed to generate and save images for order %s: %v", o.ID, err)
+			} else {
+				log.Printf("AMQP Consumer: Image generation process initiated (or completed) for order %s", o.ID)
+				messageSpan.AddEvent("image.generation.completed")
+			}
+
+			log.Println("AMQP Consumer: Order processing complete. Acknowledging message.")
 			d.Ack(false)
 		}
 	}()

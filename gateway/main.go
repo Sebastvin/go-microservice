@@ -20,6 +20,20 @@ var (
 	jaegerAddr  = common.EnvString("JAEGER_ADDR", "localhost:4318")
 )
 
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	err := common.SetGlobalTracer(context.TODO(), serviceName, jaegerAddr)
 	if err != nil {
@@ -59,7 +73,7 @@ func main() {
 
 	log.Printf("Starting HTTP server at %s", httpAddr)
 
-	if err := http.ListenAndServe(httpAddr, mux); err != nil {
+	if err := http.ListenAndServe(httpAddr, corsMiddleware(mux)); err != nil {
 		log.Fatal("Failed to start http server")
 	}
 }

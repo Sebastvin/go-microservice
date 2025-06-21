@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	pb "github.com/sebastvin/commons/api"
@@ -50,4 +51,20 @@ func (s *LoggingMiddleware) ValidateOrder(ctx context.Context, p *pb.CreateOrder
 	}()
 
 	return s.next.ValidateOrder(ctx, p)
+}
+
+func (s *LoggingMiddleware) GenerateAndSaveImages(ctx context.Context, orderID string) (err error) {
+	start := time.Now()
+
+	defer func() {
+
+		logMsg := fmt.Sprintf("GenerateAndSaveImages for order ID: %s", orderID)
+		if err != nil {
+			zap.L().Error(logMsg, zap.Duration("took", time.Since(start)), zap.Error(err))
+		} else {
+			zap.L().Info(logMsg, zap.Duration("took", time.Since(start)))
+		}
+	}()
+
+	return s.next.GenerateAndSaveImages(ctx, orderID)
 }

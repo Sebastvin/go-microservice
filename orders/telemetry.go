@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	pb "github.com/sebastvin/commons/api"
+	"go.opentelemetry.io/otel"
+	otelCodes "go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -38,4 +40,24 @@ func (s *TelemetryMiddleware) ValidateOrder(ctx context.Context, p *pb.CreateOrd
 	span := trace.SpanFromContext(ctx)
 	span.AddEvent(fmt.Sprintf("ValidateOrder: %v", p))
 	return s.next.ValidateOrder(ctx, p)
+}
+
+func (s *TelemetryMiddleware) GenerateAndSaveImages(ctx context.Context, orderID string) (err error) {
+
+	tr := otel.Tracer("orders-service")
+	ctx, span := tr.Start(ctx, fmt.Sprintf("GenerateAndSaveImages for order ID: %s", orderID))
+	defer span.End()
+
+	span.AddEvent(fmt.Sprintf("Starting image generation for order ID: %s", orderID))
+
+	err = s.next.GenerateAndSaveImages(ctx, orderID)
+
+	if err != nil {
+		span.SetStatus(otelCodes.Error, "Image generation failed")
+		span.RecordError(err)
+	} else {
+		span.SetStatus(otelCodes.Ok, "Image generation completed")
+	}
+
+	return err
 }

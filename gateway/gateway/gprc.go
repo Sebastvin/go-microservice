@@ -28,6 +28,7 @@ func (g *gateway) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest) (*p
 	return c.CreateOrder(ctx, &pb.CreateOrderRequest{
 		CustomerID: p.CustomerID,
 		Items:      p.Items,
+		Image:      p.Image,
 	})
 }
 

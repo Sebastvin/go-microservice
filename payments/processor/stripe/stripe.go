@@ -28,7 +28,7 @@ func (s *Stripe) CreatePaymentLink(o *pb.Order) (string, error) {
 	for _, item := range o.Items {
 		items = append(items, &stripe.CheckoutSessionLineItemParams{
 			Price:    stripe.String(string(item.PriceID)),
-			Quantity: stripe.Int64(int64(item.Quantity)),
+			Quantity: stripe.Int64(1),
 		})
 	}
 
